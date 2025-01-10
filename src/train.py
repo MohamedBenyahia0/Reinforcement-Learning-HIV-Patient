@@ -35,7 +35,7 @@ class ReplayBuffer:
 
 class ProjectAgent:
     def __init__(self):
-        self.model_path='model.pth'
+        self.model_path=os.getcwd()+'/model.pth'
         state_dim=env.observation_space.shape[0]
         n_action=env.action_space.n
         self.nb_neurons=256
