@@ -38,7 +38,7 @@ class ProjectAgent:
         self.model_path=os.getcwd()+'/model.pth'
         state_dim=env.observation_space.shape[0]
         n_action=env.action_space.n
-        self.nb_neurons=256
+        self.nb_neurons=512
         
         model = nn.Sequential(
             nn.Linear(state_dim, self.nb_neurons),
@@ -53,7 +53,8 @@ class ProjectAgent:
             nn.ReLU(),
             nn.Linear(self.nb_neurons, n_action)
         )
-        self.device = "cuda" if next(model.parameters()).is_cuda else "cpu"
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
 
             
         self.model = model.to(self.device) 
@@ -64,9 +65,9 @@ class ProjectAgent:
         else:
             
             self.nb_actions = env.action_space.n
-            self.gamma = 0.98
-            self.batch_size = 500 
-            buffer_size = int(1e5)
+            self.gamma = 0.95
+            self.batch_size = 256 
+            buffer_size = int(1e6)
             self.memory = ReplayBuffer(buffer_size,self.device)
             self.epsilon_max = 1.
             self.epsilon_min = 0.01
@@ -78,9 +79,9 @@ class ProjectAgent:
             self.criterion = torch.nn.SmoothL1Loss()
             lr = 0.001
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
-            self.nb_gradient_steps =3
+            self.nb_gradient_steps =1
             self.update_target_strategy = 'replace'
-            self.update_target_freq = 400
+            self.update_target_freq = 50
             self.update_target_tau =0.005
             
             self.train() 
@@ -113,7 +114,7 @@ class ProjectAgent:
         with torch.no_grad():
             Q = network(torch.Tensor(state).unsqueeze(0).to(self.device))
             return torch.argmax(Q).item()
-    def train(self,max_episode=300):
+    def train(self,max_episode=500):
         
 
         
